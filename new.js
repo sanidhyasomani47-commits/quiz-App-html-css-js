@@ -1,37 +1,3 @@
-const quizdata = [
-    {
-        question: "Which HTML tag is used to create a hyperlink?",
-        options: ["<link>", "<a>", "<href>", "<url>"],
-        correct: 1,
-    },
-    {
-        question: "What does CSS stand for?",
-        options: [
-            "Creative Style Sheets",
-            "Cascading Style Sheets",
-            "Computer Style Sheets",
-            "Colorful Style Syntax"
-        ],
-        correct: 1,
-    },
-    {
-        question: "Which programming language is used for web apps and runs in the browser",
-        options: ["Python", "Java", "JavaScript", "C++"],
-        correct: 2,
-    },
-    {
-        question: 'In Python, what does len("Hello") return?',
-        options: ["4", "5", "6", "Error"],
-        correct: 1,
-    },
-    {
-        question: "Which data structure uses FIFO (First In, First Out)?",
-        options: ["Stack", "Queue", "Tree", "Graph"],
-        correct: 1,
-    },
-];
-
-// step 2 initialization
 const quiz = document.querySelector(".quiz");
 const answerele = document.querySelectorAll(".answer");
 
@@ -42,21 +8,65 @@ const option_3 = document.getElementById("option_3");
 const option_4 = document.getElementById("option_4");
 
 const submitbtn = document.getElementById("submit");
+const toggleBtn = document.getElementById("toggle-dark");
+const quizSection = document.querySelector(".quiz-section");
 
+// Check saved theme in localStorage
+if (localStorage.getItem("theme") === "dark") {
+    quizSection.classList.add("dark-mode");
+    toggleBtn.textContent = "☀️ Light Mode";
+}
+
+toggleBtn.addEventListener("click", () => {
+    quizSection.classList.toggle("dark-mode");
+
+    if (quizSection.classList.contains("dark-mode")) {
+        toggleBtn.textContent = "☀️ Light Mode";
+        localStorage.setItem("theme", "dark");
+    } else {
+        toggleBtn.textContent = "🌙 Dark Mode";
+        localStorage.setItem("theme", "light");
+    }
+});
+
+let quizdata = [];   // will be filled from API
 let currentQuiz = 0;
 let score = 0;
 
-// step 3 load quiz
+// 🔹 Fetch questions from API
+async function fetchQuestions() {
+    try {
+        const res = await fetch("https://opentdb.com/api.php?amount=5&type=multiple");
+        const data = await res.json();
+        quizdata = data.results.map((q) => {
+            // Correct + wrong answers mixed
+            const options = [...q.incorrect_answers];
+            const correctIndex = Math.floor(Math.random() * (options.length + 1));
+            options.splice(correctIndex, 0, q.correct_answer);
+
+            return {
+                question: q.question,
+                options: options,
+                correct: correctIndex,
+            };
+        });
+
+        loadquiz(); // start quiz
+    } catch (error) {
+        console.error("Error fetching questions:", error);
+        quationele.innerText = "Failed to load questions. Try again later.";
+    }
+}
+
+// 🔹 Load question into UI
 const loadquiz = () => {
     const { question, options } = quizdata[currentQuiz];
-    quationele.innerText = question;
-    option_1.innerText = options[0];
-    option_2.innerText = options[1];
-    option_3.innerText = options[2];
-    option_4.innerText = options[3];
+    quationele.innerHTML = question; // use innerHTML because API has HTML entities
+    option_1.innerHTML = options[0];
+    option_2.innerHTML = options[1];
+    option_3.innerHTML = options[2];
+    option_4.innerHTML = options[3];
 };
-
-loadquiz();
 
 function getselectedoption() {
     let answerelement = Array.from(answerele);
@@ -69,8 +79,6 @@ const deselectanswer = () => {
 
 submitbtn.addEventListener("click", function () {
     const selectoptionindex = getselectedoption();
-    console.log("Selected:", selectoptionindex);
-
     if (selectoptionindex === -1) {
         alert("Please select an answer!");
         return;
@@ -89,8 +97,11 @@ submitbtn.addEventListener("click", function () {
         quiz.innerHTML = `
             <div class="result">
                 <h1>Your Score: ${score}/${quizdata.length} Correct Answers</h1>
-                <p>Congratulations on completing the quiz!🎉🎉</p>
+                <p>Congratulations on completing the quiz! 🎉</p>
                 <button class="reload-button" onclick="location.reload()">Play Again</button>
             </div>`;
     }
 });
+
+// 🔹 Start quiz by fetching API questions
+fetchQuestions();
