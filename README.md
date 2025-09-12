@@ -10,6 +10,7 @@ A simple interactive web-based quiz application built with HTML, CSS, and JavaSc
 -new.html — Main HTML file for the quiz interface
 -new.css — Stylesheet for layout and design
 -new.js — Quiz logic and interactivity
+https://github.com/sanidhyasomani47-commits/quiz-App-html-css-js/blob/main/quizimg/quizapp.src.png
 https://github.com/sanidhyasomani47-commits/quiz-App-html-css-js/blob/main/quizapp.src.png
 #How to Use
 -Open new.html in your browser.
